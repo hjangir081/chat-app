@@ -20,21 +20,48 @@ const ChatRoom = () => {
   const inputRef = useRef<TextInput>(null)
   console.log("Got Item Data::::::::::::::", item);
 
+  // useEffect(() => {
+  //   createRoomIfNotExists();
+  //   const otherUserId = Array.isArray(item?.userId) ? item?.userId[0] : item?.userId;
+  //   let roomId = getRoomId(user?.userId, otherUserId);
+  //   const docRef = doc(db, "rooms", roomId);
+  //   const messageRef = collection(docRef, "messages");
+  //   const q = query(messageRef, orderBy('createdAt', 'asc'));
+  
+  //   let unsub = onSnapshot(q, (snapshot) => {
+  //     let allMessages = snapshot.docs.map(doc => {
+  //       return doc.data();
+  //     });
+  //     console.log("Fetched Messages:", allMessages);
+  //     setMessage([...allMessages]);
+  //   });
+  
+  //   return unsub();
+  // }, []);
+  
+
   useEffect(() => {
     createRoomIfNotExists();
-    const otherRoomId = Array.isArray(item?.userId) ? item?.userId[0] : item?.userId;
-    let roomId = getRoomId(user?.userId, otherRoomId);
+    const otherUserId = Array.isArray(item?.userId) ? item?.userId[0] : item?.userId;
+    let roomId = getRoomId(user?.userId, otherUserId);
+    console.log("Generated Room ID:", roomId); // Log the generated room ID
+  
     const docRef = doc(db, "rooms", roomId);
-    const messageRef = collection(docRef, "message");
+    const messageRef = collection(docRef, "messages");
     const q = query(messageRef, orderBy('createdAt', 'asc'));
-
+  
     let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map(doc => {
-        return doc.data();
-      });
-      setMessage([...allMessages]);
+      let allMessages = snapshot.docs.map(doc => doc.data());
+      console.log("Fetched Messages:", allMessages); // Log the fetched messages
+      setMessage(allMessages);
+    }, (error) => {
+      console.error("Error fetching messages:", error);
     });
-  }, [])
+  
+    return unsub;
+  }, []);
+  
+
 
   const createRoomIfNotExists = async () => {
     const userId = user?.userId;
@@ -61,7 +88,7 @@ const ChatRoom = () => {
     const message = textRef.current.trim();
     if (!message) return;
     const otherUserId = Array.isArray(item?.userId) ? item?.userId[0] : item?.userId;
-  
+
     if (!user?.userId || !otherUserId) {
       console.error("Invalid userId or otherUserId", { userId: user?.userId, otherUserId });
       return;
@@ -70,22 +97,24 @@ const ChatRoom = () => {
       const roomId = getRoomId(user?.userId, otherUserId);
       const docRef = doc(db, "rooms", roomId);
       const messageRef = collection(docRef, "messages");
-      textRef.current = ""
-      if(inputRef) inputRef?.current?.clear();
-      const newDoc = await addDoc(messageRef, {
+      textRef.current = "";
+      if (inputRef) inputRef.current?.clear();
+
+      await addDoc(messageRef, {
         userId: user.userId,
         text: message,
         profileUrl: user.profileUrl,
         senderName: user.userName,
         createdAt: Timestamp.fromDate(new Date()),
       });
-      console.log("New message ID: ", newDoc.id);
-    } catch (err: unknown) {
+      console.log("Message sent successfully!");
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
       Alert.alert("Message", errorMessage);
     }
   };
-  
+
+
   return (
     <CustomKeyboardView inChat={true}>
       <View className='flex-1 bg-white'>
