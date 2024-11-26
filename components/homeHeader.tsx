@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, Platform } from 'react-native'
 import { Image } from 'expo-image';
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -27,7 +27,7 @@ const HomeHeader = () => {
         )
     }
     return (
-        <SafeAreaView className='flex-row justify-between px-5 bg-indigo-400 rounded-b-3xl shadow '>
+        <SafeAreaView className={` ${ Platform.OS == 'android' ? "py-6" : null } flex-row justify-between px-5 bg-indigo-400 rounded-b-3xl shadow`}>
             <View>
                 <Text style={{ fontSize: hp(3) }} className='font-medium text-white'>Chats</Text>
             </View>
@@ -40,8 +40,8 @@ const HomeHeader = () => {
                     }}>
                         <Image
                             style={{ height: hp(4.3), aspectRatio: 1, borderRadius: 100 }}
-                            source={user?.profileUrl}
-                            placeholder={{ blurhash }}
+                            source={{uri:user?.profileUrl}}
+                            placeholder={{ uri:'https://cdn-icons-png.flaticon.com/128/847/847969.png' }}
                             transition={500}
                         />
                     </MenuTrigger>
