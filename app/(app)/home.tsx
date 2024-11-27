@@ -45,7 +45,7 @@ const Home = () => {
       <StatusBar barStyle={statusBarStyle} backgroundColor={statusBarBackgroundColor} translucent={false}/>
       {
         users.length>0?(
-          <ChatList users={users}/>
+          <ChatList currentUser={user} users={users}/>
         ):
         (
           <View className='top-20 justify-center items-center'>

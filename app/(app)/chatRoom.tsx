@@ -1,4 +1,4 @@
-import { View, Text, StatusBar, TextInput, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, StatusBar, TextInput, TouchableOpacity, Alert, ScrollView, Keyboard } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import ChatRoomHeader from '@/components/ChatRoomHeader';
@@ -18,6 +18,7 @@ const ChatRoom = () => {
   const { user } = useAuth();
   const textRef = useRef('');
   const inputRef = useRef<TextInput>(null)
+  const scrollViewRef = useRef<ScrollView | null>(null);
   console.log("Got Item Data::::::::::::::", item);
 
   // useEffect(() => {
@@ -57,8 +58,15 @@ const ChatRoom = () => {
     }, (error) => {
       console.error("Error fetching messages:", error);
     });
+
+    const KeyBoardDidShowListner = Keyboard.addListener(
+      'keyboardDidShow', updateScrollView
+    )
   
-    return unsub;
+    return () => {
+      unsub();
+      KeyBoardDidShowListner;
+    };
   }, []);
   
 
@@ -114,6 +122,15 @@ const ChatRoom = () => {
     }
   };
 
+  useEffect(() => {
+    updateScrollView()
+  },[message])
+
+  const updateScrollView = () => {
+    setTimeout(() => {
+      scrollViewRef?.current?.scrollToEnd({animated:true})
+    }, 100)
+  }
 
   return (
     <CustomKeyboardView inChat={true}>
@@ -123,7 +140,7 @@ const ChatRoom = () => {
         <View className='h-3 border-b border-neutral-300' />
         <View className='flex-1 justify-between bg-neutral-100 overflow-visible'>
           <View className='flex-1'>
-            <MessageList messages={message} currentUser={user} />
+            <MessageList scrollViewRef={scrollViewRef} messages={message} currentUser={user} />
           </View>
           <View className='pt-2' style={{ marginBottom: hp(2.7) }}>
             <View className='flex-row justify-between items-center mx-3'>
